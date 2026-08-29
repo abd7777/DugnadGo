@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dugnad Go – Preview</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --text-primary: #1c1c1e;
+      --text-secondary: #636366;
+      --accent: #007aff;
+      --brand-yellow: #ffd700;
+      --glass-bg: rgba(255, 255, 255, 0.14);
+      --glass-border: rgba(255, 255, 255, 0.28);
+      --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      --radius: 14px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --green: #34c759;
+      --green-soft: rgba(52, 199, 89, 0.15);
+      --app-max-width: 720px;
+      --no-red: #ba0c2f;
+      --no-white: #ffffff;
+      --no-blue: #00205b;
+      --flag-wave-gradient: linear-gradient(
+        90deg,
+        var(--no-red) 0%, var(--no-red) 14%,
+        var(--no-white) 14%, var(--no-white) 16%,
+        var(--no-blue) 16%, var(--no-blue) 19%,
+        var(--no-white) 19%, var(--no-white) 21%,
+        var(--no-red) 21%, var(--no-red) 35%,
+        var(--no-white) 35%, var(--no-white) 37%,
+        var(--no-blue) 37%, var(--no-blue) 40%,
+        var(--no-white) 40%, var(--no-white) 42%,
+        var(--no-red) 42%, var(--no-red) 56%,
+        var(--no-white) 56%, var(--no-white) 58%,
+        var(--no-blue) 58%, var(--no-blue) 61%,
+        var(--no-white) 61%, var(--no-white) 63%,
+        var(--no-red) 63%, var(--no-red) 100%
+      );
+    }
+
+    @keyframes norwayFlagWave {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .flag-text-fill {
+      background-image: var(--flag-wave-gradient);
+      background-size: 220% 100%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: norwayFlagWave 28s ease-in-out infinite;
+      filter:
+        drop-shadow(0 0 1px rgba(0, 0, 0, 0.85))
+        drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55))
+        drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+    }
+
+    body {
+      font-family: var(--font);
+      background: linear-gradient(145deg, #d4dce6 0%, #eef2f6 50%, #dfe8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      max-width: var(--app-max-width);
+    }
+
+    .phone-frame {
+      width: 100%;
+      background: #111;
+      border-radius: 44px;
+      padding: 12px;
+      box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    }
+
+    .phone-screen {
+      background: url("aurora_bg.jpg") center top / cover no-repeat;
+      background-color: #07140f;
+      border-radius: 34px;
+      overflow: hidden;
+      min-height: 820px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      background: transparent;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 12px;
+      opacity: 0.95;
+    }
+
+    .app-shell {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.35s ease;
+      will-change: transform;
+    }
+
+    .screen-list {
+      transform: translateX(0);
+      z-index: 1;
+      background: transparent;
+    }
+    .screen-detail { transform: translateX(100%); z-index: 2; }
+
+    .app-shell.show-detail .screen-list {
+      transform: translateX(-28%);
+      opacity: 0.85;
+    }
+
+    .app-shell.show-detail .screen-detail {
+      transform: translateX(0);
+    }
+
+    .header {
+      position: relative;
+      padding: 8px 20px 20px;
+      flex-shrink: 0;
+      background: transparent;
+    }
+
+    .header-brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .flag-heart-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .flag-heart-shape {
+      display: block;
+      width: 30px;
+      height: 27px;
+      background-image: var(--flag-wave-gradient);
+      background-size: 220% 100%;
+      animation: norwayFlagWave 28s ease-in-out infinite;
+      filter:
+        drop-shadow(0 0 1px rgba(0, 0, 0, 0.75))
+        drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+
+    .brand-title h1 {
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+
+    .header-tagline-primary {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.45;
+      color: #ffd700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    }
+
+    .header-tagline-secondary {
+      font-size: 14px;
+      font-weight: 500;
+      font-style: italic;
+      line-height: 1.45;
+      color: #ffd700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    }
+
+    .tagline-handshake {
+      display: inline;
+      font-style: normal;
+      font-size: 3.6em;
+      margin-left: 8px;
+      vertical-align: middle;
+      filter:
+        drop-shadow(0 0 10px rgba(255, 215, 0, 0.9))
+        drop-shadow(0 0 22px rgba(255, 215, 0, 0.6))
+        drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+    }
+
+    .action-prompt-card {
+      margin: 12px 16px 16px;
+      padding: 14px 16px;
+      flex-shrink: 0;
+    }
+
+    .action-prompt-text {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #ffa726;
+      text-shadow:
+        0 0 1px rgba(0, 0, 0, 0.85),
+        0 1px 2px rgba(0, 0, 0, 0.65),
+        0 2px 4px rgba(0, 0, 0, 0.45);
+    }
+
+    .glass-panel {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      box-shadow: var(--glass-shadow);
+      border-radius: 18px;
+    }
+
+    .location-filter {
+      padding: 0 16px 10px;
+      margin-top: 0;
+      background: transparent;
+      flex-shrink: 0;
+    }
+
+    .location-filter.glass-panel {
+      margin-left: 16px;
+      margin-right: 16px;
+      margin-bottom: 4px;
+      padding: 14px 16px;
+    }
+
+    .filter-heading span {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .clear-filter-btn {
+      background: none;
+      border: none;
+      color: var(--brand-yellow);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 0;
+      display: none;
+    }
+
+    .filter-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .clear-filter-btn.visible { display: inline; }
+
+    .gps-btn {
+      width: 100%;
+      display: block;
+      padding: 11px 14px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      text-align: left;
+    }
+
+    .gps-btn.active {
+      background: rgba(0, 122, 255, 0.85);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .gps-btn:disabled {
+      opacity: 0.95;
+      cursor: wait;
+    }
+
+    .gps-btn-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .gps-btn-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gps-status {
+      display: none;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.4;
+      opacity: 0.92;
+    }
+
+    .gps-status.visible { display: block; }
+
+    .gps-btn.active .gps-status { color: rgba(255, 255, 255, 0.88); }
+    .gps-btn:not(.active) .gps-status { color: rgba(255, 255, 255, 0.75); }
+
+    .gps-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 122, 255, 0.25);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .gps-btn.active .gps-spinner {
+      border-color: rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .scanning-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border-radius: 14px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .scanning-banner .gps-spinner {
+      width: 18px;
+      height: 18px;
+    }
+
+    .card-distance {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: var(--brand-yellow);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .city-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .city-scroll::-webkit-scrollbar { display: none; }
+
+    .city-tag {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .city-tag.active {
+      background: rgba(0, 122, 255, 0.9);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .feed {
+      flex: 1;
+      padding: 16px 20px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: transparent;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: rgba(255, 255, 255, 0.82);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border-radius: 16px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 17px; color: #fff; margin-bottom: 6px; }
+    .empty-state p { font-size: 14px; line-height: 1.5; }
+
+    .card {
+      background: var(--glass-bg);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--glass-shadow);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-align: left;
+      width: 100%;
+      font-family: var(--font);
+      color: #fff;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card:active { transform: scale(0.98); }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 14px;
+      color: #fff;
+    }
+
+    .card-details {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .detail-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.4;
+    }
+
+    .detail-icon {
+      flex-shrink: 0;
+      width: 22px;
+      text-align: center;
+    }
+
+    .food-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: rgba(255, 215, 0, 0.12);
+      border: 1px solid rgba(255, 215, 0, 0.22);
+      border-radius: 10px;
+    }
+
+    .food-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--brand-yellow);
+    }
+
+    .detail-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px 14px;
+      background: transparent;
+      color: #fff;
+      flex-shrink: 0;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+
+    .back-btn:hover { background: rgba(255, 255, 255, 0.15); }
+
+    .back-arrow {
+      font-size: 22px;
+      line-height: 1;
+      margin-top: -2px;
+    }
+
+    .detail-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 20px 28px;
+    }
+
+    .detail-title {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 22px;
+    }
+
+    .info-panel {
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+    }
+
+    .info-row + .info-row {
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .info-icon-wrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .info-icon-wrap.blue { background: rgba(0, 122, 255, 0.12); }
+    .info-icon-wrap.red { background: rgba(255, 59, 48, 0.12); }
+    .info-icon-wrap.purple { background: rgba(88, 86, 214, 0.12); }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .section { margin-bottom: 22px; }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .section-text {
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text-secondary);
+    }
+
+    .food-highlight {
+      padding: 16px;
+      background: rgba(255, 149, 0, 0.12);
+      border: 1px solid rgba(255, 149, 0, 0.25);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+
+    .food-highlight .section-heading {
+      color: #ff9500;
+      margin-bottom: 8px;
+    }
+
+    .food-highlight .section-text {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .join-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font);
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
+    }
+
+    .join-btn:not(.registered) {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .join-btn.registered {
+      background: var(--green-soft);
+      color: var(--green);
+      border: 1.5px solid rgba(52, 199, 89, 0.4);
+    }
+
+    .join-btn:active { transform: scale(0.98); }
+
+    .tab-bar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 16px 22px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
+    }
+
+    .tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .tab.active { color: var(--accent); }
+    .tab-icon { font-size: 22px; }
+
+    .preview-label {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    @media (min-width: 768px) {
+      body { padding: 32px 24px; }
+      .phone-frame { border-radius: 28px; padding: 10px; }
+      .phone-screen { border-radius: 22px; min-height: 860px; }
+      .feed, .detail-content, .location-filter { padding-left: 24px; padding-right: 24px; }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 0; align-items: stretch; }
+      .app-wrapper { max-width: 100%; }
+      .phone-frame {
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        min-height: 100vh;
+      }
+      .phone-screen { border-radius: 0; min-height: 100vh; }
+      .preview-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span class="time">20:13</span>
+          <div class="status-icons">
+            <span>●●●●</span>
+            <span>WiFi</span>
+            <span>🔋</span>
+          </div>
+        </div>
+
+        <div class="app-shell" id="appShell">
+          <div class="screen screen-list" id="listScreen">
+            <header class="header">
+              <div class="header-brand-block">
+                <div class="brand-title">
+                  <h1 class="flag-text-fill">Dugnad Go</h1>
+                  <div class="flag-heart-icon" aria-hidden="true">
+                    <span class="flag-heart-shape"></span>
+                  </div>
+                </div>
+                <p class="header-tagline-primary">Frivillighet i Norge</p>
+                <p class="header-tagline-secondary">Sammen skaper vi lys i hverdagen.<span class="tagline-handshake" aria-hidden="true">🤝</span></p>
+              </div>
+            </header>
+
+            <section class="action-prompt-card glass-panel" aria-label="Handlinger">
+              <p class="action-prompt-text">Bli med på dugnad eller opprett en annonsering for frivillige</p>
+            </section>
+
+            <section class="location-filter glass-panel" aria-label="Filtrer etter sted">
+              <div class="filter-heading">
+                <span>Filtrer etter sted</span>
+                <button class="clear-filter-btn" id="clearFilterBtn" type="button">Vis alle</button>
+              </div>
+              <button class="gps-btn" id="gpsBtn" type="button">
+                <div class="gps-btn-content">
+                  <div class="gps-btn-row">
+                    <span class="gps-spinner" id="gpsSpinner" hidden></span>
+                    <span id="gpsIcon">📍</span>
+                    <span id="gpsLabel">My Location (GPS)</span>
+                  </div>
+                  <span class="gps-status" id="gpsStatus"></span>
+                </div>
+              </button>
+              <div class="city-scroll" id="cityScroll" role="tablist" aria-label="Norske byer"></div>
+            </section>
+
+            <main class="feed" id="feedList" aria-label="Liste over dugnader"></main>
+
+            <nav class="tab-bar" aria-label="Hovednavigasjon">
+              <div class="tab active">
+                <span class="tab-icon" aria-hidden="true">📋</span>
+                <span>Aktiviteter</span>
+              </div>
+              <div class="tab">
+                <span class="tab-icon" aria-hidden="true">➕</span>
+                <span>Opprett</span>
+              </div>
+              <div class="tab">
+                <span class="tab-icon" aria-hidden="true">👤</span>
+                <span>Profil</span>
+              </div>
+            </nav>
+          </div>
+
+          <div class="screen screen-detail" id="detailScreen" aria-hidden="true">
+            <nav class="detail-nav">
+              <button class="back-btn" id="backBtn" type="button" aria-label="Tilbake til listen">
+                <span class="back-arrow" aria-hidden="true">‹</span>
+                <span>Aktiviteter</span>
+              </button>
+            </nav>
+            <div class="detail-content" id="detailContent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="preview-label">Dugnad Go – Interactive App Preview</p>
+  </div>
+
+  <script>
+    const filterCities = ["Oslo", "Bergen", "Trondheim", "Stavanger", "Fredrikstad", "Tromsø", "Bodø"];
+
+    // Simulated rural Nordland GPS fix (Meløy / Glomfjord area)
+    const demoRuralNordlandCoordinate = { latitude: 66.8219, longitude: 13.3489 };
+
+    const norwegianPlaces = [
+      { municipality: "Oslo", region: "Oslo", latitude: 59.9139, longitude: 10.7522, isMajorCity: true },
+      { municipality: "Bergen", region: "Vestland", latitude: 60.3913, longitude: 5.3221, isMajorCity: true },
+      { municipality: "Trondheim", region: "Trøndelag", latitude: 63.4305, longitude: 10.3951, isMajorCity: true },
+      { municipality: "Stavanger", region: "Rogaland", latitude: 58.97, longitude: 5.7331, isMajorCity: true },
+      { municipality: "Fredrikstad", region: "Viken", latitude: 59.2181, longitude: 10.9298, isMajorCity: true },
+      { municipality: "Tromsø", region: "Troms og Finnmark", latitude: 69.6492, longitude: 18.9553, isMajorCity: true },
+      { municipality: "Bodø", region: "Nordland", latitude: 67.2804, longitude: 14.4049, isMajorCity: true },
+      { municipality: "Meløy", region: "Nordland", latitude: 66.8219, longitude: 13.3489, isMajorCity: false },
+      { municipality: "Røst", region: "Nordland", latitude: 67.5175, longitude: 12.0946, isMajorCity: false },
+      { municipality: "Sømna", region: "Nordland", latitude: 65.2589, longitude: 12.0344, isMajorCity: false },
+      { municipality: "Røros", region: "Trøndelag", latitude: 62.5748, longitude: 11.3844, isMajorCity: false },
+      { municipality: "Karasjok", region: "Troms og Finnmark", latitude: 69.4719, longitude: 25.5112, isMajorCity: false },
+      { municipality: "Geilo", region: "Innlandet", latitude: 60.5333, longitude: 8.2167, isMajorCity: false },
+      { municipality: "Leknes", region: "Nordland", latitude: 68.1475, longitude: 13.6115, isMajorCity: false },
+    ];
+
+    const items = [
+      { id: "1", title: "Vårrydding på idrettsanlegget", date: "Lørdag 12. april 2026, kl. 10:00", location: "Gressvik idrettsplass, Fredrikstad", city: "Fredrikstad", municipality: "Fredrikstad", region: "Viken", latitude: 59.2181, longitude: 10.9298, workType: "Rydde, klippe gress og male garderobe", description: "Vi trenger hjelp til å gjøre idrettsanlegget klart for sommersesongen.", foodService: "Kaffe og sveler" },
+      { id: "2", title: "Kakebaking til 17. mai-feiring", date: "Søndag 4. mai 2026, kl. 14:00", location: "Skolekjøkkenet, Risvollan skole, Trondheim", city: "Trondheim", municipality: "Trondheim", region: "Trøndelag", latitude: 63.4305, longitude: 10.3951, workType: "Bake kaker og pynte til nasjonaldagen", description: "Sammen baker vi kaker til 17. mai-feiringen i nabolaget.", foodService: "Te, juice og kakebit til alle frivillige" },
+      { id: "3", title: "Dugnad på fotballbanen", date: "Onsdag 21. mai 2026, kl. 17:30", location: "Viking Stadion, Stavanger", city: "Stavanger", municipality: "Stavanger", region: "Rogaland", latitude: 58.97, longitude: 5.7331, workType: "Linjerebane, fylle sand og vedlikeholde mål", description: "Fotballbanen trenger vedlikehold før sommerens kamper.", foodService: "Pølser i brød og brus" },
+      { id: "4", title: "Planting av blomsterbed i nabolaget", date: "Lørdag 7. juni 2026, kl. 09:00", location: "Fellesareal ved Bølerveien 42, Oslo", city: "Oslo", municipality: "Oslo", region: "Oslo", latitude: 59.9139, longitude: 10.7522, workType: "Grave, plante og vanne blomsterbed", description: "La oss gjøre nabolaget finere sammen!", foodService: "Frukt, vann og vafler" },
+      { id: "5", title: "Strandrydding ved Puddefjorden", date: "Lørdag 19. april 2026, kl. 11:00", location: "Puddefjorden, Bergen", city: "Bergen", municipality: "Bergen", region: "Vestland", latitude: 60.3913, longitude: 5.3221, workType: "Samle søppel og rydde langs strandlinjen", description: "Bergen trenger frivillige til vårrydding ved sjøen.", foodService: "Kaffe og skillingsboller" },
+      { id: "6", title: "Midnattsol-festival forberedelser", date: "Fredag 13. juni 2026, kl. 16:00", location: "Storgata scene, Tromsø", city: "Tromsø", municipality: "Tromsø", region: "Troms og Finnmark", latitude: 69.6492, longitude: 18.9553, workType: "Rigge scene, henge opp dekorasjoner og sette opp stoler", description: "Hjelp oss gjøre Tromsø klar for midnattsol-feiringen!", foodService: "Reindeer wrap og varm kakao" },
+      { id: "7", title: "Kystrydding ved havna", date: "Lørdag 24. mai 2026, kl. 10:30", location: "Bodø havn, Bodø", city: "Bodø", municipality: "Bodø", region: "Nordland", latitude: 67.2804, longitude: 14.4049, workType: "Rydde brygge, samle avfall og vaske benker", description: "La oss ta vare på kysten i Bodø!", foodService: "Vaffel og kaffe" },
+      { id: "8", title: "Grilldugnad i Frognerparken", date: "Søndag 18. mai 2026, kl. 12:00", location: "Frognerparken, Oslo", city: "Oslo", municipality: "Oslo", region: "Oslo", latitude: 59.92, longitude: 10.7, workType: "Sette opp grill, rydde område og dekorere", description: "Felles grillfest for nabolaget i Frognerparken.", foodService: "Grillmat og brus" },
+      { id: "9", title: "Bryggevedlikehold i Glomfjord", date: "Lørdag 3. mai 2026, kl. 09:30", location: "Glomfjord havneområde, Meløy", city: "Meløy", municipality: "Meløy", region: "Nordland", latitude: 66.8219, longitude: 13.3489, workType: "Reparere brygge, smøre utstyr og rydde kaianlegg", description: "Lokal dugnad for kystsamfunnet i Meløy.", foodService: "Fiskesuppe og flatbrød" },
+      { id: "10", title: "Redningsstasjon forberedelser på Røst", date: "Torsdag 15. mai 2026, kl. 18:00", location: "Røst kommunehus, Røst", city: "Røst", municipality: "Røst", region: "Nordland", latitude: 67.5175, longitude: 12.0946, workType: "Klargjøre utstyr, sjekke båter og pakke forsyninger", description: "Frivillig innsats for øysamfunnet på Røst.", foodService: "Kaffe, te og tørrfisk" },
+      { id: "11", title: "Setervei-rydding ved Hardangervidda", date: "Lørdag 31. mai 2026, kl. 08:00", location: "Geilo fjellstue, Geilo", city: "Geilo", municipality: "Hol", region: "Innlandet", latitude: 60.5333, longitude: 8.2167, workType: "Merke stier, rydde steinras og reparere grind", description: "Dugnad langs seterveier i høyfjellet.", foodService: "Vafler og varm saft" },
+      { id: "12", title: "Samisk kulturhus vedlikehold", date: "Lørdag 10. mai 2026, kl. 11:00", location: "Karasjok sentrum, Karasjok", city: "Karasjok", municipality: "Karasjok", region: "Troms og Finnmark", latitude: 69.4719, longitude: 25.5112, workType: "Male, rydde og klargjøre lokaler til kulturevent", description: "Vi samler frivillige for å klargjøre kulturhuset i Karasjok.", foodService: "Reinsdyrstek og kaffe" },
+      { id: "13", title: "Båtnaust-reparasjon i Sømna", date: "Onsdag 28. mai 2026, kl. 17:00", location: "Sømna kirkevik, Sømna", city: "Sømna", municipality: "Sømna", region: "Nordland", latitude: 65.2589, longitude: 12.0344, workType: "Reparere båtnaust, bytte bord og behandle treverk", description: "Liten kystkommune med stor dugnadsånd!", foodService: "Kaffe og hjemmebakst" },
+      { id: "14", title: "Bergstue-oppussing på Røros", date: "Søndag 1. juni 2026, kl. 10:00", location: "Bergstaden, Røros", city: "Røros", municipality: "Røros", region: "Trøndelag", latitude: 62.5748, longitude: 11.3844, workType: "Restaurere trepanel, rydde og male", description: "Historisk dugnad i Bergstaden på Røros.", foodService: "Røroskake og kaffe" },
+      { id: "15", title: "Lofoten fiskerihavn vårklargjøring", date: "Fredag 23. mai 2026, kl. 15:00", location: "Leknes havn, Vestvågøy", city: "Leknes", municipality: "Vestvågøy", region: "Nordland", latitude: 68.1475, longitude: 13.6115, workType: "Rydde kaier, smøre vinsjer og sjekke sikkerhetsutstyr", description: "Sesongforberedelser i Lofoten.", foodService: "Fiskesuppe og brød" },
+    ];
+
+    const registrationState = {};
+    let activeItemId = null;
+    let selectedCity = null;
+    let isUsingGPS = false;
+    let isScanningGPS = false;
+    let userCoordinate = null;
+    let gpsScanTimer = null;
+
+    const appShell = document.getElementById("appShell");
+    const feedList = document.getElementById("feedList");
+    const detailScreen = document.getElementById("detailScreen");
+    const detailContent = document.getElementById("detailContent");
+    const backBtn = document.getElementById("backBtn");
+    const gpsBtn = document.getElementById("gpsBtn");
+    const gpsSpinner = document.getElementById("gpsSpinner");
+    const gpsIcon = document.getElementById("gpsIcon");
+    const gpsLabel = document.getElementById("gpsLabel");
+    const gpsStatus = document.getElementById("gpsStatus");
+    const cityScroll = document.getElementById("cityScroll");
+    const clearFilterBtn = document.getElementById("clearFilterBtn");
+
+    function haversineDistance(from, to) {
+      const earthRadius = 6371000;
+      const lat1 = from.latitude * Math.PI / 180;
+      const lat2 = to.latitude * Math.PI / 180;
+      const deltaLat = (to.latitude - from.latitude) * Math.PI / 180;
+      const deltaLon = (to.longitude - from.longitude) * Math.PI / 180;
+      const a = Math.sin(deltaLat / 2) ** 2
+        + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
+      return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function closestPlace(coordinate) {
+      return norwegianPlaces.reduce((closest, place) => {
+        const distance = haversineDistance(coordinate, place);
+        if (!closest || distance < closest.distance) {
+          return { place, distance };
+        }
+        return closest;
+      }, null)?.place;
+    }
+
+    function isRemoteNorthernNorway(coordinate) {
+      return coordinate.latitude >= 66 && coordinate.longitude >= 10;
+    }
+
+    function isUrbanCentre(coordinate) {
+      const match = closestPlace(coordinate);
+      if (!match) return false;
+      const distance = haversineDistance(coordinate, match);
+      return match.isMajorCity && distance <= 25000;
+    }
+
+    function adaptiveSearchRadius(coordinate) {
+      if (isRemoteNorthernNorway(coordinate)) return 280000;
+      if (!isUrbanCentre(coordinate)) return 160000;
+      const match = closestPlace(coordinate);
+      if (match && !match.isMajorCity) return 110000;
+      return 65000;
+    }
+
+    function placeDescription(coordinate) {
+      const place = closestPlace(coordinate);
+      return place ? `${place.municipality}, ${place.region}` : "Norge";
+    }
+
+    function formattedCoordinate(coordinate) {
+      return `${coordinate.latitude.toFixed(4)}°N, ${coordinate.longitude.toFixed(4)}°E`;
+    }
+
+    function formattedDistance(meters) {
+      if (meters < 1000) return `${Math.round(meters)} m`;
+      if (meters < 100000) return `${(meters / 1000).toFixed(1)} km`;
+      return `${Math.round(meters / 1000)} km`;
+    }
+
+    function filterItemsByGPS(coordinate) {
+      const radius = adaptiveSearchRadius(coordinate);
+      const userRegion = closestPlace(coordinate)?.region;
+
+      const ranked = items
+        .map((item) => ({ item, distance: haversineDistance(coordinate, item) }))
+        .sort((a, b) => a.distance - b.distance);
+
+      let results = ranked.filter((entry) => entry.distance <= radius).map((entry) => entry.item);
+      const minimumResults = isRemoteNorthernNorway(coordinate) ? 2 : 3;
+
+      if (results.length < minimumResults && userRegion) {
+        const existing = new Set(results.map((item) => item.id));
+        ranked
+          .filter((entry) => entry.item.region === userRegion && !existing.has(entry.item.id))
+          .slice(0, minimumResults - results.length)
+          .forEach((entry) => results.push(entry.item));
+      }
+
+      return ranked
+        .filter((entry) => results.some((item) => item.id === entry.item.id))
+        .map((entry) => ({ item: entry.item, distance: entry.distance }));
+    }
+
+    function getFilteredItems() {
+      if (isUsingGPS && userCoordinate) {
+        return filterItemsByGPS(userCoordinate);
+      }
+      if (selectedCity) {
+        return items.filter((item) => item.city === selectedCity).map((item) => ({ item, distance: null }));
+      }
+      return items.map((item) => ({ item, distance: null }));
+    }
+
+    function updateFilterUI() {
+      gpsBtn.classList.toggle("active", isUsingGPS);
+      gpsBtn.disabled = isScanningGPS;
+      clearFilterBtn.classList.toggle("visible", isUsingGPS || selectedCity !== null);
+
+      gpsSpinner.hidden = !isScanningGPS;
+      gpsIcon.hidden = isScanningGPS;
+      gpsLabel.textContent = isScanningGPS ? "Skanner GPS…" : "My Location (GPS)";
+
+      if (isUsingGPS && userCoordinate && !isScanningGPS) {
+        gpsStatus.textContent = `${placeDescription(userCoordinate)} · ${formattedCoordinate(userCoordinate)}`;
+        gpsStatus.classList.add("visible");
+      } else if (isScanningGPS) {
+        gpsStatus.textContent = "Henter posisjon…";
+        gpsStatus.classList.add("visible");
+      } else {
+        gpsStatus.textContent = "";
+        gpsStatus.classList.remove("visible");
+      }
+
+      cityScroll.querySelectorAll(".city-tag").forEach((tag) => {
+        tag.classList.toggle("active", !isUsingGPS && selectedCity === tag.dataset.city);
+      });
+    }
+
+    function renderCityTags() {
+      cityScroll.innerHTML = "";
+      filterCities.forEach((city) => {
+        const tag = document.createElement("button");
+        tag.type = "button";
+        tag.className = "city-tag";
+        tag.dataset.city = city;
+        tag.textContent = city;
+        tag.setAttribute("role", "tab");
+        tag.addEventListener("click", () => selectCity(city));
+        cityScroll.appendChild(tag);
+      });
+    }
+
+    function renderCard(entry) {
+      const { item, distance } = entry;
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "card";
+      card.dataset.id = item.id;
+      card.innerHTML = `
+        ${distance !== null ? `<span class="card-distance">${formattedDistance(distance)} unna</span>` : ""}
+        <h2 class="card-title">${item.title}</h2>
+        <div class="card-details">
+          <div class="detail-row"><span class="detail-icon" aria-hidden="true">📅</span><span>${item.date}</span></div>
+          <div class="detail-row"><span class="detail-icon" aria-hidden="true">📍</span><span>${item.location}</span></div>
+          <div class="detail-row"><span class="detail-icon" aria-hidden="true">🔨</span><span>${item.workType}</span></div>
+        </div>
+        <div class="food-row"><span aria-hidden="true">🍽️</span><span class="food-text">${item.foodService}</span></div>
+      `;
+      card.addEventListener("click", () => openDetail(item.id));
+      return card;
+    }
+
+    function renderList() {
+      feedList.innerHTML = "";
+
+      if (isScanningGPS) {
+        feedList.innerHTML = `
+          <div class="scanning-banner">
+            <span class="gps-spinner"></span>
+            <span>Henter posisjon og søker etter dugnader i nærområdet…</span>
+          </div>
+        `;
+        return;
+      }
+
+      const filtered = getFilteredItems();
+      if (filtered.length === 0) {
+        feedList.innerHTML = `
+          <div class="empty-state">
+            <div class="icon" aria-hidden="true">📍</div>
+            <h3>Ingen dugnader funnet</h3>
+            <p>${isUsingGPS ? "Ingen dugnader funnet innenfor søkeradiusen." : "Prøv et annet sted eller vis alle aktiviteter."}</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((entry) => feedList.appendChild(renderCard(entry)));
+    }
+
+    function infoRow(icon, iconClass, label, value) {
+      return `
+        <div class="info-row">
+          <div class="info-icon-wrap ${iconClass}" aria-hidden="true">${icon}</div>
+          <div><div class="info-label">${label}</div><div class="info-value">${value}</div></div>
+        </div>
+      `;
+    }
+
+    function renderDetail(item) {
+      const isRegistered = !!registrationState[item.id];
+      detailContent.innerHTML = `
+        <h1 class="detail-title">${item.title}</h1>
+        <div class="info-panel">
+          ${infoRow("📅", "blue", "Dato og tid", item.date)}
+          ${infoRow("📍", "red", "Sted", item.location)}
+          ${infoRow("🔨", "purple", "Arbeidstype", item.workType)}
+        </div>
+        <section class="section"><h2 class="section-heading">📝 Om dugnaden</h2><p class="section-text">${item.description}</p></section>
+        <section class="food-highlight"><h2 class="section-heading">🍽️ Servering</h2><p class="section-text">${item.foodService}</p></section>
+        <button class="join-btn ${isRegistered ? "registered" : ""}" id="joinBtn" type="button">
+          <span aria-hidden="true">${isRegistered ? "✓" : "＋"}</span>
+          <span>${isRegistered ? "Påmeldt – Registered" : "Meld deg på"}</span>
+        </button>
+      `;
+      document.getElementById("joinBtn").addEventListener("click", () => toggleRegistration(item.id));
+    }
+
+    function openDetail(id) {
+      const item = items.find((entry) => entry.id === id);
+      if (!item) return;
+      activeItemId = id;
+      renderDetail(item);
+      appShell.classList.add("show-detail");
+      detailScreen.setAttribute("aria-hidden", "false");
+    }
+
+    function closeDetail() {
+      appShell.classList.remove("show-detail");
+      detailScreen.setAttribute("aria-hidden", "true");
+      activeItemId = null;
+    }
+
+    function toggleRegistration(id) {
+      registrationState[id] = !registrationState[id];
+      const item = items.find((entry) => entry.id === id);
+      if (item && activeItemId === id) renderDetail(item);
+    }
+
+    function activateGPS() {
+      if (gpsScanTimer) clearTimeout(gpsScanTimer);
+      isUsingGPS = true;
+      selectedCity = null;
+      isScanningGPS = true;
+      userCoordinate = null;
+      updateFilterUI();
+      renderList();
+
+      gpsScanTimer = setTimeout(() => {
+        userCoordinate = demoRuralNordlandCoordinate;
+        isScanningGPS = false;
+        updateFilterUI();
+        renderList();
+      }, 1600);
+    }
+
+    function selectCity(city) {
+      if (gpsScanTimer) clearTimeout(gpsScanTimer);
+      isUsingGPS = false;
+      isScanningGPS = false;
+      userCoordinate = null;
+      selectedCity = selectedCity === city ? null : city;
+      updateFilterUI();
+      renderList();
+    }
+
+    function clearFilter() {
+      if (gpsScanTimer) clearTimeout(gpsScanTimer);
+      isUsingGPS = false;
+      isScanningGPS = false;
+      userCoordinate = null;
+      selectedCity = null;
+      updateFilterUI();
+      renderList();
+    }
+
+    gpsBtn.addEventListener("click", activateGPS);
+    clearFilterBtn.addEventListener("click", clearFilter);
+    backBtn.addEventListener("click", closeDetail);
+
+    renderCityTags();
+    updateFilterUI();
+    renderList();
+  </script>
+</body>
+</html>
